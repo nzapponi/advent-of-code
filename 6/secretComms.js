@@ -9,8 +9,8 @@ const getStartOfPacket = (input, packetLength) => {
             characters.shift();
             characters.push(input[i]);
 
-            const uniqueCharacters = [...new Set(characters)];
-            if (uniqueCharacters.length === packetLength) {
+            const uniqueCharacters = new Set(characters);
+            if (uniqueCharacters.size === packetLength) {
                 return i + 1;
             }
         }
