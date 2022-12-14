@@ -28,37 +28,33 @@ const parseInput = (input) => {
   });
 };
 
+const gcd = (a, b) => a ? gcd(b % a, a) : b;
+const lcm = (a, b) => a * b / gcd(a, b);
+
 const mod = (num, a) => {
-  // // Initialize result
-  // let res = 0;
- 
-  // for (let i = 0; i < num.length; i++) {
-  //   res = (res * 10 + parseInt(num[i])) % a;
-  // }
-
-  // return res;
-
   let powersOf10Modn = 1;
   let answer = 0;
   const revNum = num.split("").reverse();
   for (let i = 0; i < revNum.length; i++) {
     answer = (answer + powersOf10Modn * parseInt(revNum[i])) % a;
-    powersOf10Modn = (powersOf10Modn * 10) % num;
+    powersOf10Modn = (powersOf10Modn * 10) % a;
   }
 
   return answer;
 };
 
-const calculateRound = (monkeys, worryDivider) => {
+const calculateRound = (monkeys, worryDivider, worryModulo = 1) => {
   const sortedMonkeys = [...monkeys].sort((a, b) => a.id - b.id);
   const evaluations = new Array(sortedMonkeys.length).fill(0);
   for (const monkey of sortedMonkeys) {
-    // console.log(`Monkey ${monkey.id}`);
     while (monkey.items.length > 0) {
       const item = monkey.items.shift();
       let worryLevel = monkey.operation.op === "+" ? (monkey.operation.rhs === "self" ? item + item : item + monkey.operation.rhs) : (monkey.operation.op === "*" ? (monkey.operation.rhs === "self" ? item * item : item * monkey.operation.rhs) : 0);
       if (worryDivider !== 1) {
         worryLevel /= BigInt(worryDivider);
+      }
+      if (worryModulo !== 1) {
+        worryLevel = worryLevel % BigInt(worryModulo);
       }
       let monkeyIndex = -1;
       if (mod(worryLevel.toString(), monkey.test.division) === 0) {
@@ -68,7 +64,6 @@ const calculateRound = (monkeys, worryDivider) => {
       }
       sortedMonkeys[monkeyIndex].items.push(worryLevel);
       evaluations[monkey.id] += 1;
-      // console.log(`Item with worry level ${item} (${worryLevel}) is thrown to monkey ${monkeyIndex}`);
     }
   }
 
@@ -78,40 +73,47 @@ const calculateRound = (monkeys, worryDivider) => {
   };
 };
 
-const calculateMonkeysRounds = (monkeys, numRounds, worryDivider) => {
+const calculateMonkeysRounds = (monkeys, numRounds) => {
   let monkeyRounds = [...monkeys];
   const evaluations = new Array(monkeys.length).fill(0);
   for (let i = 0; i < numRounds; i++) {
-    const { monkeys: newMonkeys, evaluations: newEvals } = calculateRound(monkeyRounds, worryDivider);
+    const { monkeys: newMonkeys, evaluations: newEvals } = calculateRound(monkeyRounds, 3);
     monkeyRounds = newMonkeys;
     for (const id in newEvals) {
       evaluations[id] += newEvals[id];
     }
-    if (i % 100 === 0) {
-      console.log(`Round ${i}`);
+  }
+
+  return { monkeys: monkeyRounds, evaluations };
+};
+
+const calculateMonkeysRoundsWithModulo = (monkeys, numRounds, worryModulo) => {
+  let monkeyRounds = [...monkeys];
+  const evaluations = new Array(monkeys.length).fill(0);
+  for (let i = 0; i < numRounds; i++) {
+    const { monkeys: newMonkeys, evaluations: newEvals } = calculateRound(monkeyRounds, 1, worryModulo);
+    monkeyRounds = newMonkeys;
+    for (const id in newEvals) {
+      evaluations[id] += newEvals[id];
     }
-    // console.log(`End of round ${i + 1}`);
-    // for (const monkey of monkeyRounds) {
-    //   console.log(`Monkey ${monkey.id}: ${monkey.items.join(", ")}`);
-    //   // console.log(`Monkey ${monkey.id} inspected ${evaluations[monkey.id]} times`);
-    // }
-    // console.log(" ");
   }
 
   return { monkeys: monkeyRounds, evaluations };
 };
 
 const main = () => {
-  const input = readFileSync("sample.txt", { encoding: "utf-8" });
+  const input = readFileSync("input.txt", { encoding: "utf-8" });
   let monkeys = parseInput(input);
-  const { monkeys: newMonkeys, evaluations } = calculateMonkeysRounds(monkeys, 20, 3);
+  const { monkeys: newMonkeys, evaluations } = calculateMonkeysRounds(monkeys, 20);
   const topEvaluations = [...evaluations].sort((a, b) => b - a);
   console.log(`Part 1: ${topEvaluations[0] * topEvaluations[1]}`);
 
   monkeys = parseInput(input);
-  const { monkeys: newMonkeysTwo, evaluations: evaluationsTwo } = calculateMonkeysRounds(monkeys, 10000, 1);
+  const modulos = monkeys.map((monkey) => monkey.test.division);
+  const modulo = modulos.reduce((prev, m) => prev > 0 ? lcm(prev, m) : m, 0);
+
+  const { monkeys: newMonkeysTwo, evaluations: evaluationsTwo } = calculateMonkeysRoundsWithModulo(monkeys, 10000, modulo);
   const topEvaluationsTwo = [...evaluationsTwo].sort((a, b) => b - a);
-  console.log(topEvaluationsTwo);
   console.log(`Part 2: ${topEvaluationsTwo[0] * topEvaluationsTwo[1]}`);
 };
 
