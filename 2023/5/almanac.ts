@@ -3,7 +3,6 @@ import { loadTextFile } from "../../utils";
 const input = await loadTextFile("input.txt");
 
 const seeds = [...input[0].matchAll(/([0-9]+)/g)].map((match) => +match[1]);
-const p2seeds = [];
 
 const mappings: {
   from: string;
