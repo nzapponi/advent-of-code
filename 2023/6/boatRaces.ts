@@ -4,19 +4,19 @@ const input = await loadTextFile("input.txt");
 const times = [...input[0].matchAll(/([0-9]+)/g)].map((v) => +v[1]);
 const distances = [...input[1].matchAll(/([0-9]+)/g)].map((v) => +v[1]);
 
-// d = v x tu
-// v = tp
-// tu = tt - tp
-//
-// d = tp * (tt - tp)
-// tp * (tt - tp) > record
-// tp^2 - tt*tp + record < 0
-//
+// distance = velocity x time_unpressed
+// velocity = time_pressed
+// time_unpressed = time_total - time_pressed
 
+// distance = time_pressed * (time_total - time_pressed)
+// time_pressed * (time_total - time_pressed) > record
+// time_pressed^2 - time_total*time_pressed + record < 0
+
+// Quadratic formula
 // ax2 + bx + c = 0
 // x = ( -b ± sqrt(b2 - 4ac) ) / 2a
 
-// tp = ( tt ± sqrt(tt2 - 4*record)) / 2
+// time_pressed in between ( time_total ± sqrt(time_total^2 - 4 * record)) / 2
 
 function calculateMinPress(time: number, distance: number): [number, number] {
   return [
@@ -44,5 +44,7 @@ console.log(total);
 const newTime = +input[0].replaceAll(/[^0-9]/g, "");
 const newDistance = +input[1].replaceAll(/[^0-9]/g, "");
 
-const waysToWin = stepsBetweenNumbers(...calculateMinPress(newTime, newDistance)).length;
+const waysToWin = stepsBetweenNumbers(
+  ...calculateMinPress(newTime, newDistance)
+).length;
 console.log(waysToWin);
