@@ -1,6 +1,6 @@
 import { loadTextFile } from "../../utils";
 
-const input = await loadTextFile("test.txt");
+const input = await loadTextFile("input.txt");
 
 function getAllArrangements(input: string[]) {
   const arrangements = [];
